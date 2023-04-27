@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    button {
+      cursor: pointer;
+      color: white;
+      border: solid 1px black;
+      border-radius: 2px;
+    }
+
+    .btn-green {
+      background: #2cc92c;
+    }
+
+    .btn-advance{
+        background: #a47fd9;
+    }
+
+    .btn-blue {
+      background: #03a9f4;
+    }
+
+    .btn-delete {
+      background: #f27114;
+    }
+
+    .btn-edit {
+      background: #03a9f4;
+    }
+
+    .container {
+      margin: 20px 15px;
+    }
+
+    form {
+      width: 400px;
+      text-align: right;
+    }
+
+    .hide {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <span>
+      <label>Name:</label>
+      <input type="text" id="nameInput">
+    </span>
+    <span>
+      <label>Active:</label>
+      <select id="activeInput">
+        <option></option>
+        <option>Y</option>
+        <option>N</option>
+      </select>
+    </span>
+    <span>
+      <button class="btn-blue" onclick="onSearch()">Search</button>
+      <button class="btn-green" onclick="onAdd()">+Add Airline</button>
+      <button class="btn-advance" onclick="window.open('/advanced')">Go to Advanced Query</button>
+    </span>
+  </div>
+
+  <div id="addFormId" class="container hide">
+    <form id="form">
+      <div>
+        <label>Airline_ID</label>
+        <input id="airlineId" type="text" placeholder="please input Airline_ID">
+      </div>
+      <div>
+        <label>Name</label>
+        <input id="nameId" type="text" placeholder="please input name">
+      </div>
+      <div>
+        <label>IATA</label>
+        <input id="iataId" type="text" placeholder="please input IATA">
+      </div>
+      <div>
+        <label>ICAO</label>
+        <input id="icaoId" type="text" placeholder="please input ICAO">
+      </div>
+      <div>
+        <label>Callsign</label>
+        <input id="callsignId" type="text" placeholder="please input Callsign">
+      </div>
+      <div>
+        <label>Country</label>
+        <input id="countryId" type="text" placeholder="please input Country">
+      </div>
+      <div>
+        <label>Active</label>
+        <input id="activeId" type="text" placeholder="please input Active">
+      </div>
+
+      <div>
+        <button type="button" class="btn-edit" onclick="hideForm()">Cancel</button>
+        <button type="button" class="btn-green" onclick="onSubmit()">Submit</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="container">
+    <table border="1" cellspacing="0" cellpadding="5" id="content">
+
+    </table>
+  </div>
+
+  <div class="container">
+    <span>
+      <label>Airline_ID:</label>
+      <input type="text" id="idInput">
+    </span>
+    <span>
+      <button class="btn-blue" onclick="onSearchRoute()">Search</button>
+    </span>
+  </div>
+
+  <div class="container">
+    <table border="1" cellspacing="0" cellpadding="5" id="content_route">
+    </table>
+  </div>
+
+  <script>
+    let operationType = ''
+
+    function hideForm() {
+      document.querySelector('#addFormId').style.display = 'none'
+    }
+    function showForm() {
+      document.querySelector('#addFormId').style.display = 'block'
+    }
+    function onAdd() {
+      operationType = 'add'
+      showForm()
+    }
+    function onSearch() {
+
+
+      let name = document.querySelector('#nameInput').value
+      let active = document.querySelector('#activeInput').value
+
+      
+      fetch(`/airlines?name=${name}&active=${active}`).then(res => res.json()).then(data => {
+        let h = `<tr>
+          <td>Airline_ID</td>
+          <td>Name</td>
+	  <td>IATA</td>
+          <td>ICAO</td>
+          <td>Callsign</td>
+          <td>Country</td>
+          <td>Active</td>
+          <td>Operation</td>
+        </tr>`
+        h += data.map(x => {
+          return `
+          <tr id="tr_${x.Airline_ID}">
+          <td>${x.Airline_ID}</td>
+          <td>${x.Name}</td>
+          <td>${x.IATA}</td>
+          <td>${x.ICAO}</td>
+          <td>${x.Callsign}</td>
+          <td>${x.Country}</td>
+          <td>${x.Active}</td>
+          <td>
+            <button class="btn-delete" onclick="onDelete(${x.Airline_ID})">Delete</button>
+            <button class="btn-edit" onclick="onEdit(${x.Airline_ID})">Edit</button>
+          </td>
+          </tr>
+          `
+        }).join('')
+        document.querySelector('#content').innerHTML = h
+        
+      })
+
+    }
+
+    function onSearchRoute() {
+
+        let id = document.querySelector('#idInput').value
+
+        fetch(`/routes?id=${id}`).then(res => res.json()).then(data => {
+          let t = `<tr>
+	      <td>Route_ID</td>
+            <td>Airline_ID</td>
+            <td>Source_Airport_ID</td>
+            <td>Destination_Airport_ID</td>
+            <td>Stops</td>
+	      <tr>`
+	    t += data.map(x => {
+	      return `
+          <tr id="tr_${x.Route_ID}">
+          <td>${x.Route_ID}</td>
+          <td>${x.Airline_ID}</td>
+          <td>${x.Source_Airport_ID}</td>
+          <td>${x.Destination_Airport_ID}</td>
+          <td>${x.Stops}</td>
+          </tr>
+          `
+        }).join('')
+        document.querySelector('#content_route').innerHTML = t
+      })
+    }
+
+    function onSubmit() {
+      let url
+      if (operationType == 'add') {
+        url = '/airline/add'
+      } else if (operationType == 'edit') {
+        url = '/airline/update'
+      }
+
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          Airline_ID: document.querySelector('#airlineId').value,
+          Name: document.querySelector('#nameId').value,
+          IATA: document.querySelector('#iataId').value,
+          ICAO: document.querySelector('#icaoId').value,
+          Callsign: document.querySelector('#callsignId').value,
+          Country: document.querySelector('#countryId').value,
+          Active: document.querySelector('#activeId').value,
+        })
+      }).then(res => {
+        return res.json()
+      }).then(data => {
+        if (data.code == 200) {
+          alert('Submit success!')
+          onSearch()
+          hideForm()
+        } else {
+          alert(data.msg)
+        }
+        document.querySelector('#form').reset()
+      })
+    }
+    function onEdit(id) {
+      operationType = 'edit'
+      showForm()
+
+      const row = document.querySelector('#tr_' + id).children
+      document.querySelector('#airlineId').value = row[0].innerHTML
+      document.querySelector('#nameId').value = row[1].innerHTML
+      document.querySelector('#iataId').value = row[2].innerHTML
+      document.querySelector('#icaoId').value = row[3].innerHTML
+      document.querySelector('#callsignId').value = row[4].innerHTML
+      document.querySelector('#countryId').value = row[5].innerHTML
+      document.querySelector('#activeId').value = row[6].innerHTML
+
+    }
+    function onDelete(id) {
+      fetch('/airline/' + id, {
+        method: 'DELETE'
+      }).then(res => {
+        return res.json()
+      }).then(data => {
+        if (data.code == 200) {
+          alert('Delete success!')
+          onSearch()
+        } else {
+          alert(data.msg)
+        }
+      })
+    }
+
+    onSearch()
+  </script>
+</body>
+
+</html>

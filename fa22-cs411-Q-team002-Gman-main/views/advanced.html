@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    button {
+      cursor: pointer;
+      color: white;
+      border: solid 1px black;
+      border-radius: 2px;
+    }
+
+    .btn-blue {
+      background: #03a9f4;
+    }
+
+    .main{
+        margin: 0 auto;
+        width: 50%;
+    }
+
+    h2{
+        color: #795548;
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="main">
+    <div class="container">
+    <span>
+      <label>City Name:</label>
+      <input type="text" id="nameInput" placeholder="such as L">
+    </span>
+    <span>
+      <label>Airline Id:</label>
+      <input type="text" id="airlineIdInput" placeholder="such as 4611">
+    </span>
+      <span>
+      <button class="btn-blue" onclick="onSearch1()">City Name Query</button>
+      <button class="btn-blue" onclick="onSearch2()">Airline Id Query</button>
+    </span>
+    </div>
+
+    <div style="width: 100%;display: flex; flex-direction: column;">
+      <h2 id="desc"></h2>
+      <table border="1" cellspacing="0" cellpadding="5" id="content">
+
+      </table>
+    </div>
+  </div>
+
+  <script>
+    function onSearch1() {
+      document.querySelector('#desc').innerHTML = `
+        Select for each City whose name starts with an user input the count of Routes that use them as the Source_ID.
+      `
+      let cityName = document.querySelector('#nameInput').value
+      fetch(`/city/name/${cityName}`).then(res => res.json()).then(data => {
+        let h = `<tr>
+          <td>City Name</td>
+          <td>Num</td>
+        </tr>`
+        h += data.map(x => {
+          return `
+          <tr>
+          <td>${x.Name}</td>
+          <td>${x.num}</td>
+          </tr>
+          `
+        }).join('')
+        document.querySelector('#content').innerHTML = h
+      })
+    }
+
+    function onSearch2() {
+      document.querySelector('#desc').innerHTML = `
+        Select all the routes' destination airport names whose Source_ID is an element of the set of routes' Source_IDs
+whose Airline_ID is from user input.
+      `
+      let airlineId = document.querySelector('#airlineIdInput').value
+      fetch(`/airport/name/${airlineId}`).then(res => res.json()).then(data => {
+        let h = `<tr>
+          <td>Airport Name</td>
+        </tr>`
+        h += data.map(x => {
+          return `
+          <tr>
+          <td>${x.Name}</td>
+          </tr>
+          `
+        }).join('')
+        document.querySelector('#content').innerHTML = h
+      })
+    }
+
+  </script>
+</body>
+
+</html>
