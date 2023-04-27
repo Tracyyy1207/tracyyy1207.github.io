@@ -1,2 +1,2 @@
 # yijinw.github.io
-Yijin's Website
+Hi! Here is Yijin's personal website!
