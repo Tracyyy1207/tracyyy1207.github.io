@@ -1,0 +1,227 @@
+---
+title: "STAT440 Final Project"
+output: html_document
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+# load the required packages
+library(shiny)
+library(shinydashboard)
+library(tidyverse) # data wrangling
+library(httr) # URL
+library(jsonlite) # json file
+```
+
+
+```{r}
+# ui
+ui <- dashboardPage(
+  
+  # Header
+  dashboardHeader(
+    title = tags$span(
+    style = "color: black; font-weight: bold;",
+    "Yelp API DashBoard")
+    ),
+  
+  # Sidebar
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Introduction", tabName = "introduction", icon = icon("info-circle")),
+      menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard"))
+      )
+    ),
+  
+  # Body / Main content
+  dashboardBody(
+    tags$head(tags$style(HTML('
+                                /* logo */
+                                .skin-blue .main-header .logo {
+                                background-color: #c4d4b4;
+                                }
+                                
+                                /* logo when hovered */
+                                .skin-blue .main-header .logo:hover {
+                                background-color: #c4d4b4;
+                                }
+                                
+                                /* navbar (rest of the header) */
+                                .skin-blue .main-header .navbar {
+                                background-color: #c4d4b4;
+                                }
+                                
+                                /* main sidebar */
+                                .skin-blue .main-sidebar {
+                                background-color: #c4d4b4;
+                                }
+                                
+                                /* active selected tab in the sidebarmenu */
+                                .skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
+                                background-color: #439871;
+                                }
+                                
+                                /* other links in the sidebarmenu */
+                                .skin-blue .main-sidebar .sidebar .sidebar-menu a{
+                                background-color: #c4d4b4;
+                                color: #000000;
+                                }
+                                
+                                /* other links in the sidebarmenu when hovered */
+                                .skin-blue .main-sidebar .sidebar .sidebar-menu a:hover{
+                                background-color: #439871;
+                                }
+                                
+                                /* toggle button when hovered  */
+                                .skin-blue .main-header .navbar .sidebar-toggle:hover{
+                                background-color: #439871;
+                                }
+
+                                /* body */
+                                .content-wrapper, .right-side {
+                                background-color: #c4d4b4;
+                                }
+                                
+                                /* Sidebar toggle icon color */
+                                .sidebar-toggle::before {
+                                color: black;
+                                }
+                              '))
+              ),
+    
+    tabItems(
+      
+      # Second tab content
+      tabItem(
+        tabName = "dashboard",
+        fluidRow(
+           column(width = 10, offset = 2,
+              box(
+                width = 8,
+                title = "Search", 
+                background = "olive", 
+                solidHeader = TRUE,
+                textInput(inputId = "keyword",
+                          label = "Keyword",
+                          value = "coffee"),
+                textInput(inputId = "location",
+                          label = "Location",
+                          value = "Champaign"),
+                textInput(inputId = "limit",
+                          label = "Limit (MAX = 50)",
+                          value = "20"),
+                actionButton(inputId = "goButton",
+                             "Get Results"),
+                tableOutput("table"),
+                plotOutput("ratingGraph1"),
+                plotOutput("ratingGraph2")
+              )
+            )
+          )
+        ),
+      
+      # First tab content
+      tabItem(
+        tabName = "introduction",
+        tags$style(".tab-pane h2 {text-align:center; font-size: 32px; font-weight: bold; margin-bottom: 20px;}"),
+        tags$style(".tab-pane p {font-size: 18px; text-indent: 2em;}"),
+        h2("Welcome to the Yelp API Dashboard!"),
+        p("This is a ShinyApp that harnesses the Yelp API to look for businesses based on a keyword and location specified by the user. The app showcases a search box with input fields for the keyword, location, and the number of results to display. Upon clicking the 'Get Results' button, the app transmits a GET request to the Yelp API and returns the search results in a table format with rating scores arranged in a descending order along with two bar charts."),
+        p("The app consists of two tabs, namely 'Introduction' and 'Dashboard.' The 'Introduction' tab gives a brief overview of the app and the API, while the 'Dashboard' tab incorporates the search box and the search results."),
+        p("The app also employs some data processing techniques utilizing the dplyr library to create a summary table of the search results. The summary table encompasses the business name, whether it is open or closed, its rating, price, address, phone number, and zip code."),
+        p("Currently, the keyword is set to 'coffee', the location is set to 'Champaign', and the limit is set to '20'. Feel free to modify these parameters to search for other content!")
+      )
+    )
+  )
+)
+
+# server
+server <- function(input, output) {
+  
+  # Define a reactive object to fetch data from the API
+  data <- eventReactive(input$goButton, {
+  
+    # API URL
+    api_key <- "pr-GsmDUN3VFfzoGllD-OaFWiqJIqNS7jan51-bcOtCx2pm38LqC2ZsQ7hjvxZFd09_-Mi_CHzvD2Avxu3PQ5s2BbkMcPRtsEiamsPJJxdy87ZthLI0nxipEom1IZHYx"
+    url <- "https://api.yelp.com/v3/businesses/search"
+    headers <- c(Authorization = paste0("Bearer ", api_key))
+    keyword <- input$keyword
+    location <- input$location
+    limit <- input$limit
+    params <- list(term = keyword, location = location, limit = limit)
+    
+    # Send a GET request to the API
+    r <- httr::GET(url, query = params, add_headers(.headers=headers))
+    rr <- httr::content(r, as = "text", encoding = "UTF-8")
+    df <- jsonlite::fromJSON(rr,flatten = TRUE)
+    
+    # Return the data as a reactive object
+    df <- as.data.frame(df$businesses)
+    df
+  })
+  
+  # Define a summary table using dplyr
+  summaryTable <- reactive({
+    req(input$goButton)
+    data() %>%
+      select(`name`, `is_closed`, `rating`, `price`, `location.address1`, `display_phone`, `location.zip_code`) %>%
+      rename(Name=`name`, Closed=`is_closed`, Rating=`rating`, Cost=`price`, Address=`location.address1`, Phone=`display_phone`, `Zip Code`=`location.zip_code`) %>%
+      arrange(-Rating)
+  })
+  
+  # Display the summary table in the dashboard
+  output$table <- renderTable({
+    summaryTable()
+  })
+  
+  # Create a bar chart of the ratings
+  output$ratingGraph1 <- renderPlot({
+    req(input$goButton)
+    colors <- c("#f0a3a3", "#f9d9a6", "#b6dfb6", "#85c0f9")
+    data() %>%
+      mutate(name = ifelse(duplicated(name), paste0(name, " (", `location.address1`, ")"), name)) %>%
+      mutate(`Rating Group` = cut(rating, breaks = c(0, 2.99, 3.99, 4.99, 5), 
+                            labels = c("Low (0-3)", "Medium (3-4)", "High (4-5)", "Excellent (5)"))) %>%
+      arrange(desc(rating)) %>%
+      ggplot(aes(x = rating, y = reorder(name,rating), fill = `Rating Group`)) +
+      geom_bar(stat="identity") +
+      scale_fill_manual(values = colors) +
+      xlab("Rating") +
+      ylab("Business Name") +
+      labs(x="Rating", y="Bussiness Name", title="Business Rating") + 
+      theme_minimal() +
+      theme(panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.background = element_blank()) +
+      theme(plot.title = element_text(hjust = 0.5, size = 18, face = "bold"))
+  })
+  
+  # Create a bar chart of the ratings
+  output$ratingGraph2 <- renderPlot({
+    req(input$goButton)
+    colors <- c("#f0a3a3", "#f9d9a6", "#b6dfb6", "#85c0f9")
+    data() %>%
+      mutate(`Rating Group` = cut(rating, breaks = c(0, 2.99, 3.99, 4.99, 5),
+                                  labels = c("Low (0-3)", "Medium (3-4)", "High (4-5)", "Excellent (5)"))) %>%
+      group_by(`Rating Group`) %>%
+      summarise(count=n()) %>%
+      ggplot(aes(x=`Rating Group`, y=count, fill=`Rating Group`)) +
+      geom_bar(stat="identity") +
+      scale_fill_manual(values=colors) +
+      labs(x="Rating", y="Count", title="Count by Rating") + 
+      theme_minimal() +
+      theme(panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.background = element_blank()) +
+      theme(plot.title = element_text(hjust = 0.5, size = 18, face = "bold"))
+    })
+}
+
+# shinyAPP
+shinyApp(ui = ui, server = server)
+```
