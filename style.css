@@ -5,6 +5,7 @@ body {
   font-family: 'Inter', sans-serif;
   margin: 0;
   padding: 0;
+  padding-top: 70px; /* space for fixed navbar */
   line-height: 1.6;
   background: #f8f9fa;
   color: #333;
@@ -25,6 +26,18 @@ header h1 {
 header p {
   margin: 0.5rem 0 1rem;
   font-weight: 300;
+}
+
+/* ✅ Fixed Navbar */
+nav {
+  position: fixed;      /* keep navbar visible */
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #1a1a1a;  /* match header */
+  z-index: 1000;        /* stay above content */
+  padding: 1rem;
+  text-align: center;
 }
 
 nav a {
@@ -81,4 +94,9 @@ footer {
 footer a {
   color: #00adb5;
   text-decoration: none;
+}
+
+/* ✅ Smooth scrolling */
+html {
+  scroll-behavior: smooth;
 }
