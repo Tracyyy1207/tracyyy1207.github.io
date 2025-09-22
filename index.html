@@ -34,6 +34,13 @@
     </p>
   </section>
 
+  <!-- Education Section -->
+  <section id="education">
+    <h2>Education</h2>
+    <p><strong>University of Illinois at Urbana-Champaign</strong> — M.S. Statistics</p>
+    <p><strong>University of Washington</strong> — B.S. Mathematics</p>
+  </section>
+
   <!-- Experience Section -->
   <section id="experience">
     <h2>Experience</h2>
@@ -67,16 +74,32 @@
       <li><strong>Therapist Evaluation System:</strong> Designed KPI-driven system to track consultation hours, satisfaction, and retention, supporting therapist growth at PsyCare.</li>
     </ul>
   </section>
+  
+<!-- Work Samples Section -->
+<section id="work-sample" style="padding:40px; background:#111; color:#fff;">
+  <h2 style="border-bottom:2px solid teal; display:inline-block;">Work Samples</h2>
+  
+  <div class="work-sample">
+    <h3>PsyCare.AI</h3>
+    <p>Built an end-to-end AI-powered mental health platform integrating Neo4j, Python ETL pipelines, and ML-driven therapist evaluation dashboards.</p>
+    <a href="https://github.com/Tracyyy1207/PsyCare-KG" target="_blank">View on GitHub</a>
+  </div>
+  
+  <div class="work-sample">
+    <h3>Lowe’s Sales Lift Analysis</h3>
+    <p>Analyzed 5M+ transactions with SAS/SQL; achieved 2% sales lift and $2.6M revenue impact for Independence Day campaign.</p>
+    <a href="https://github.com/Tracyyy1207/lowes-sales-lift" target="_blank">View on GitHub</a>
+  </div>
+  
+  <div class="work-sample">
+    <h3>PEFT Optimization with Stiefel Manifolds</h3>
+    <p>Researched parameter-efficient fine-tuning methods (LoRA, Prefix-Tuning, IA3, P-Tuning) on GPT-Neo and LLaMA for NLP tasks.</p>
+    <a href="https://github.com/Tracyyy1207/peft-stiefel" target="_blank">View on GitHub</a>
+  </div>
+</section>
 
-  <!-- Education Section -->
-  <section id="education">
-    <h2>Education</h2>
-    <p><strong>University of Illinois at Urbana-Champaign</strong> — M.S. Statistics</p>
-    <p><strong>University of Washington</strong> — B.S. Mathematics</p>
-  </section>
-
-  <!-- Skills Section -->
-  <section id="skills" style="background:#111; color:#fff; padding:40px;">
+<!-- Skills Section -->
+<section id="skills" style="padding:40px; background:#111; color:#fff;">
   <h2 style="border-bottom:2px solid teal; display:inline-block;">Skills</h2>
   <p>My work as a Data/Business Analyst has trained me to leverage the following tools and technologies.</p>
   
@@ -101,17 +124,36 @@
   </div>
 </section>
 
+<!-- Styles -->
 <style>
+  /* Skills bars */
   .bar {
     width: 100%; 
-    background: #ccc;
+    background: #333;
     border-radius: 20px;
     margin-bottom: 15px;
+    overflow: hidden;
   }
   .bar div {
     height: 20px; 
     border-radius: 20px; 
     background: teal;
+  }
+
+  /* Work samples */
+  .work-sample {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid teal;
+    border-radius: 8px;
+    background: #1a1a1a;
+  }
+  .work-sample a {
+    color: teal;
+    text-decoration: none;
+  }
+  .work-sample a:hover {
+    text-decoration: underline;
   }
 </style>
 
